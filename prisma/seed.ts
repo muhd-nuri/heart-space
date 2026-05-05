@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client"
+import { auth } from "../lib/auth"
 
 const prisma = new PrismaClient()
 
@@ -87,6 +88,23 @@ const news = [
   },
 ]
 
+async function seedAdmin() {
+  const email = process.env.ADMIN_EMAIL ?? "admin@heartspace.my"
+  const password = process.env.ADMIN_PASSWORD ?? "ChangeMe123!"
+  const name = process.env.ADMIN_NAME ?? "HeartSpace Admin"
+
+  const existing = await prisma.user.findUnique({ where: { email } })
+  if (existing) {
+    console.log(`  · Admin already exists: ${email}`)
+    return
+  }
+
+  // Better Auth handles the User + Account inserts and password hashing.
+  await auth.api.signUpEmail({ body: { email, password, name } })
+  console.log(`  · Admin created: ${email} / ${password}`)
+  console.log("    ⚠ Change this password before production.")
+}
+
 async function main() {
   console.log("Seeding HeartSpace …")
 
@@ -97,6 +115,7 @@ async function main() {
       create: { id: `stat-${stat.order}`, ...stat },
     })
   }
+  console.log(`  · ${stats.length} impact stats`)
 
   for (const c of campaigns) {
     await prisma.campaign.upsert({
@@ -105,6 +124,7 @@ async function main() {
       create: c,
     })
   }
+  console.log(`  · ${campaigns.length} campaigns`)
 
   for (const n of news) {
     await prisma.newsPost.upsert({
@@ -113,6 +133,9 @@ async function main() {
       create: n,
     })
   }
+  console.log(`  · ${news.length} news posts`)
+
+  await seedAdmin()
 
   console.log("✓ Seed complete")
 }

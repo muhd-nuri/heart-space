@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import { MapPin, Phone, Mail, ArrowRight } from "lucide-react"
 import { SocialIcon } from "@/components/ui/social-icon"
@@ -26,15 +27,14 @@ export function Footer() {
         <div className="mx-auto grid max-w-6xl gap-14 px-6 py-20 md:grid-cols-12 md:gap-12 md:px-8 md:py-24">
           {/* Manifesto */}
           <div className="md:col-span-5">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <span aria-hidden className="grid h-10 w-10 place-items-center rounded-full bg-[var(--color-teal)] text-white">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-              </span>
-              <span className="font-display text-[1.2rem] font-extrabold tracking-tight">
-                Heart<span className="text-[var(--color-coral)]">Space</span>
-              </span>
+            <Link href="/" aria-label="HeartSpace — home" className="inline-flex items-center">
+              <Image
+                src="/images/logo.png"
+                alt="HeartSpace"
+                width={594}
+                height={157}
+                className="h-10 w-auto"
+              />
             </Link>
 
             <blockquote className="mt-9 max-w-md font-display text-[1.5rem] font-bold leading-[1.25] tracking-[-0.018em] text-white sm:text-[1.7rem]">
@@ -75,7 +75,7 @@ export function Footer() {
                 Stories from the field, monthly. No fundraising emails — only the
                 ones we&apos;d want to read ourselves.
               </p>
-              <form className="mt-5 flex w-full overflow-hidden rounded-full border border-white/15 bg-white/[0.06] focus-within:border-[var(--color-teal)]">
+              <form className="mt-5 flex w-full items-stretch overflow-hidden rounded-full border border-white/15 bg-white/[0.06] focus-within:border-[var(--color-teal)]">
                 <label htmlFor="newsletter-email" className="sr-only">
                   Email
                 </label>
@@ -84,11 +84,11 @@ export function Footer() {
                   type="email"
                   required
                   placeholder="you@email.com"
-                  className="flex-1 bg-transparent px-5 py-3 text-[0.92rem] text-white placeholder:text-white/40 focus:outline-none"
+                  className="min-w-0 flex-1 bg-transparent px-5 py-3 text-[0.92rem] text-white placeholder:text-white/40 focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="group/sub inline-flex items-center gap-1 bg-[var(--color-teal)] px-5 text-[0.85rem] font-semibold text-white transition-colors hover:bg-[var(--color-teal-dark)]"
+                  className="group/sub inline-flex shrink-0 items-center gap-1 whitespace-nowrap bg-[var(--color-teal)] px-5 text-[0.85rem] font-semibold text-white transition-colors hover:bg-[var(--color-teal-dark)]"
                 >
                   Subscribe
                   <ArrowRight size={14} className="transition-transform group-hover/sub:translate-x-0.5" />

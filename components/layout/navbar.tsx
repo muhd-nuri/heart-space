@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
@@ -56,19 +57,15 @@ export function Navbar() {
       <div aria-hidden className="h-[2px] w-full bg-gradient-to-r from-[var(--color-coral)] via-[var(--color-teal)] to-[var(--color-coral)] opacity-80" />
 
       <div className="mx-auto flex h-[60px] max-w-6xl items-center justify-between gap-6 px-6 md:h-[72px] md:px-8">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <LogoMark overDarkHero={overDarkHero} />
-          <span
-            className={cn(
-              "font-display text-[1.05rem] font-extrabold tracking-tight transition-colors",
-              overDarkHero ? "text-white" : "text-[var(--color-ink)]"
-            )}
-          >
-            Heart
-            <span className={overDarkHero ? "text-[var(--color-coral-light)]" : "text-[var(--color-coral)]"}>
-              Space
-            </span>
-          </span>
+        <Link href="/" aria-label="HeartSpace — home" className="group flex items-center">
+          <Image
+            src="/images/logo.png"
+            alt="HeartSpace"
+            width={594}
+            height={157}
+            priority
+            className="h-8 w-auto md:h-9"
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -216,24 +213,6 @@ function ImpactTicker({
         raised this month
       </span>
     </div>
-  )
-}
-
-function LogoMark({ overDarkHero }: { overDarkHero: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        "grid h-9 w-9 place-items-center rounded-full transition-colors",
-        overDarkHero
-          ? "bg-white/10 text-white ring-1 ring-white/30"
-          : "bg-[var(--color-teal)] text-white"
-      )}
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
-    </span>
   )
 }
 
