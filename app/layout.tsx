@@ -3,6 +3,9 @@ import { Plus_Jakarta_Sans } from "next/font/google"
 import localFont from "next/font/local"
 
 import "./globals.css"
+import { ORG_LD, ldScriptProps } from "@/lib/json-ld"
+import { GA4 } from "@/components/analytics/ga4"
+import { MetaPixel } from "@/components/analytics/meta-pixel"
 
 const display = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -44,7 +47,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className={`${body.className} bg-[var(--color-off-white)] text-[var(--color-ink-soft)] antialiased`}>
+        {/* Organization JSON-LD — shared across every page so search engines
+            and social previews always have an authoritative org card. */}
+        <script {...ldScriptProps(ORG_LD)} />
         {children}
+        {/* Analytics injected only when env IDs are set. */}
+        <GA4 />
+        <MetaPixel />
       </body>
     </html>
   )

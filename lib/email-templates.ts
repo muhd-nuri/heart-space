@@ -172,6 +172,86 @@ export function contributionReceiptEmail(c: ContributionReceiptInput) {
   return { subject, html, text }
 }
 
+export type ContactInquiryInput = {
+  fromName: string
+  fromEmail: string
+  topic: string
+  message: string
+  phone?: string | null
+  organization?: string | null
+}
+
+const TOPIC_LABELS: Record<string, string> = {
+  general: "General enquiry",
+  partner: "Partnership",
+  csr: "Corporate CSR",
+  clinical: "Clinical / healthcare",
+  institutional: "Institutional",
+  press: "Press",
+  donor: "Donor relations",
+}
+
+/**
+ * Email sent to the HeartSpace inbox when someone submits the contact form.
+ * Plain HTML, table-based, with a reply-to set to the contact's email so the
+ * team can hit "reply" and the conversation lands in the right place.
+ */
+export function contactInquiryEmail(c: ContactInquiryInput) {
+  const topicLabel = TOPIC_LABELS[c.topic] ?? c.topic
+  const subject = `New enquiry · ${topicLabel} · ${c.fromName}`
+
+  const escMessage = escapeHtml(c.message).replace(/\n/g, "<br>")
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /></head>
+<body style="margin:0;padding:0;background:${OFF_WHITE};font-family:${FONT};color:${INK_SOFT};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="600" style="max-width:600px;width:100%;background:#fff;border-radius:14px;overflow:hidden;border:1px solid ${HAIRLINE};">
+        <tr><td style="height:6px;background:linear-gradient(90deg,${TEAL} 0%,${CORAL} 50%,${TEAL} 100%);"></td></tr>
+        <tr><td style="padding:32px 32px 8px;">
+          <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${TEAL};">— New contact form enquiry</p>
+          <h1 style="margin:12px 0 0;font-size:22px;line-height:1.25;font-weight:800;color:${CHARCOAL};letter-spacing:-0.015em;">${escapeHtml(topicLabel)}</h1>
+        </td></tr>
+        <tr><td style="padding:8px 32px 0;">
+          <table role="presentation" width="100%" style="background:${ASH};border-radius:10px;">
+            ${row("From", `${escapeHtml(c.fromName)} &lt;${escapeHtml(c.fromEmail)}&gt;`)}
+            ${c.organization ? row("Organisation", escapeHtml(c.organization)) : ""}
+            ${c.phone ? row("Phone", escapeHtml(c.phone)) : ""}
+            ${row("Topic", escapeHtml(topicLabel), true)}
+          </table>
+        </td></tr>
+        <tr><td style="padding:24px 32px 32px;">
+          <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${INK_MUTED};">Message</p>
+          <div style="font-size:15px;line-height:1.7;color:${INK_SOFT};white-space:pre-wrap;">${escMessage}</div>
+        </td></tr>
+        <tr><td style="padding:16px 32px 24px;background:${ASH};border-top:1px solid ${HAIRLINE};font-size:12px;color:${INK_MUTED};">
+          Reply directly to this email to respond — replies route to ${escapeHtml(c.fromEmail)}.
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  const text = [
+    `New contact form enquiry: ${topicLabel}`,
+    ``,
+    `From: ${c.fromName} <${c.fromEmail}>`,
+    c.organization ? `Organisation: ${c.organization}` : "",
+    c.phone ? `Phone: ${c.phone}` : "",
+    `Topic: ${topicLabel}`,
+    ``,
+    `Message:`,
+    c.message,
+  ]
+    .filter(Boolean)
+    .join("\n")
+
+  return { subject, html, text }
+}
+
 export type VolunteerConfirmationInput = {
   name: string
   email: string

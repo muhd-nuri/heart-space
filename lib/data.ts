@@ -188,6 +188,84 @@ function makeFallbackDetail(slug: string): CampaignDetail | null {
   }
 }
 
+export async function getAllNews(opts?: { category?: string }): Promise<NewsCardData[]> {
+  try {
+    const posts = await prisma.newsPost.findMany({
+      where: {
+        published: true,
+        ...(opts?.category ? { category: opts.category } : {}),
+      },
+      orderBy: { publishedAt: "desc" },
+    })
+    if (!posts.length && !opts?.category) return FALLBACK_NEWS
+    return posts.map((p) => ({
+      title: p.title,
+      slug: p.slug,
+      excerpt: p.excerpt,
+      coverImage: p.coverImage,
+      category: p.category,
+      publishedAt: p.publishedAt,
+      author: p.author,
+    }))
+  } catch {
+    if (opts?.category) {
+      return FALLBACK_NEWS.filter((p) => p.category === opts.category)
+    }
+    return FALLBACK_NEWS
+  }
+}
+
+export type NewsPostFull = {
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  coverImage: string
+  category: string
+  publishedAt: Date | null
+  author: string
+}
+
+export async function getNewsPost(slug: string): Promise<NewsPostFull | null> {
+  try {
+    const post = await prisma.newsPost.findUnique({ where: { slug } })
+    if (!post || !post.published) return null
+    return {
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt,
+      content: post.content,
+      coverImage: post.coverImage,
+      category: post.category,
+      publishedAt: post.publishedAt,
+      author: post.author,
+    }
+  } catch {
+    return null
+  }
+}
+
+export async function getRelatedNews(currentSlug: string, limit = 3): Promise<NewsCardData[]> {
+  try {
+    const posts = await prisma.newsPost.findMany({
+      where: { published: true, slug: { not: currentSlug } },
+      orderBy: { publishedAt: "desc" },
+      take: limit,
+    })
+    return posts.map((p) => ({
+      title: p.title,
+      slug: p.slug,
+      excerpt: p.excerpt,
+      coverImage: p.coverImage,
+      category: p.category,
+      publishedAt: p.publishedAt,
+      author: p.author,
+    }))
+  } catch {
+    return FALLBACK_NEWS.filter((p) => p.slug !== currentSlug).slice(0, limit)
+  }
+}
+
 export async function getLatestNews(limit = 3): Promise<NewsCardData[]> {
   try {
     const posts = await prisma.newsPost.findMany({
