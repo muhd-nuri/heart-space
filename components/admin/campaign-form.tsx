@@ -8,6 +8,7 @@ import {
   updateCampaign,
   type CampaignFormState,
 } from "@/app/admin/campaigns/actions"
+import { ImageUpload } from "@/components/admin/image-upload"
 import { cn, formatRM } from "@/lib/utils"
 
 type Mode = { kind: "create" } | { kind: "edit"; id: string; raised: number }
@@ -60,7 +61,11 @@ export function CampaignForm({
   const [slug, setSlug] = useState(initial.slug)
   const [slugTouched, setSlugTouched] = useState(mode.kind === "edit" || !!initial.slug)
   const [description, setDescription] = useState(initial.description)
-  const [image, setImage] = useState(initial.image)
+  const [image, setImage] = useState(
+    // Legacy seed paths like "/images/campaigns/gaza.jpg" don't render under
+    // next/image without an allowlist; show as empty so the admin uploads a real cover.
+    initial.image && !initial.image.startsWith("/images/") ? initial.image : ""
+  )
   const [target, setTarget] = useState<string>(String(initial.target))
   const [status, setStatus] = useState(initial.status)
   const [category, setCategory] = useState(initial.category)
@@ -124,28 +129,32 @@ export function CampaignForm({
         />
       </Field>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Field label="Image path or URL" name="image" error={state?.fieldErrors?.image}>
-          <input
-            name="image"
-            value={image}
-            onChange={(e) => setImage(e.target.value)}
-            className={cn(inputCls(state?.fieldErrors?.image), "font-mono text-[0.88rem]")}
-          />
-        </Field>
+      <Field
+        label="Cover image"
+        name="image"
+        hint="16:10 ratio reads best in cards and detail hero. JPG / PNG / WEBP up to 4 MB."
+        error={state?.fieldErrors?.image}
+      >
+        <ImageUpload
+          endpoint="campaignImage"
+          name="image"
+          value={image}
+          onChange={setImage}
+          aspect="16/10"
+        />
+      </Field>
 
-        <Field label="Target (RM)" name="target" error={state?.fieldErrors?.target}>
-          <input
-            name="target"
-            type="number"
-            min={1}
-            step={100}
-            value={target}
-            onChange={(e) => setTarget(e.target.value)}
-            className={inputCls(state?.fieldErrors?.target)}
-          />
-        </Field>
-      </div>
+      <Field label="Target (RM)" name="target" error={state?.fieldErrors?.target}>
+        <input
+          name="target"
+          type="number"
+          min={1}
+          step={100}
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+          className={cn(inputCls(state?.fieldErrors?.target), "max-w-xs")}
+        />
+      </Field>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <Field label="Status" name="status">

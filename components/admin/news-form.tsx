@@ -9,6 +9,7 @@ import {
   type NewsFormState,
 } from "@/app/admin/news/actions"
 import { TipTapEditor } from "@/components/admin/tiptap-editor"
+import { ImageUpload } from "@/components/admin/image-upload"
 import { cn } from "@/lib/utils"
 
 type Mode = { kind: "create" } | { kind: "edit"; id: string; publishedAt: string | null }
@@ -59,7 +60,10 @@ export function NewsForm({
   const [slug, setSlug] = useState(initial.slug)
   const [slugTouched, setSlugTouched] = useState(mode.kind === "edit" || !!initial.slug)
   const [excerpt, setExcerpt] = useState(initial.excerpt)
-  const [coverImage, setCoverImage] = useState(initial.coverImage)
+  const [coverImage, setCoverImage] = useState(
+    // Same legacy-path handling as the campaign form.
+    initial.coverImage && !initial.coverImage.startsWith("/images/") ? initial.coverImage : ""
+  )
   const [category, setCategory] = useState(initial.category)
   const [author, setAuthor] = useState(initial.author)
   const [published, setPublished] = useState(initial.published)
@@ -133,30 +137,34 @@ export function NewsForm({
         />
       </Field>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Field label="Cover image (path or URL)" name="coverImage" error={state?.fieldErrors?.coverImage}>
-          <input
-            name="coverImage"
-            value={coverImage}
-            onChange={(e) => setCoverImage(e.target.value)}
-            className={cn(inputCls(state?.fieldErrors?.coverImage), "font-mono text-[0.88rem]")}
-          />
-        </Field>
+      <Field
+        label="Cover image"
+        name="coverImage"
+        hint="16:10 ratio reads best as a card thumbnail. JPG / PNG / WEBP up to 4 MB."
+        error={state?.fieldErrors?.coverImage}
+      >
+        <ImageUpload
+          endpoint="newsImage"
+          name="coverImage"
+          value={coverImage}
+          onChange={setCoverImage}
+          aspect="16/10"
+        />
+      </Field>
 
-        <Field label="Category" name="category">
-          <select
-            name="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value as Initial["category"])}
-            className={inputCls()}
-          >
-            <option value="news">News</option>
-            <option value="mission">Mission</option>
-            <option value="impact">Impact</option>
-            <option value="press">Press</option>
-          </select>
-        </Field>
-      </div>
+      <Field label="Category" name="category">
+        <select
+          name="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as Initial["category"])}
+          className={cn(inputCls(), "max-w-xs")}
+        >
+          <option value="news">News</option>
+          <option value="mission">Mission</option>
+          <option value="impact">Impact</option>
+          <option value="press">Press</option>
+        </select>
+      </Field>
 
       <Field label="Author" name="author" error={state?.fieldErrors?.author}>
         <input
