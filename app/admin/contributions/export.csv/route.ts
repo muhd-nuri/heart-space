@@ -26,7 +26,7 @@ const COLUMNS = [
   "contributorName",
   "contributorEmail",
   "contributorPhone",
-  "billCode",
+  "stripeSessionId",
 ] as const
 
 const MAX_ROWS = 10_000

@@ -79,7 +79,7 @@ export function ContributePanel({ slug, raised, target, contributorCount, endDat
       </CTAButton>
 
       <p className="mt-4 text-[0.78rem] leading-relaxed text-[var(--color-ink-muted)]">
-        Secure payment via ToyyibPay (FPX, cards, e-wallets). Your contribution
+        Secure payment via Stripe (cards, FPX, e-wallets). Your contribution
         is logged and a receipt is emailed to you.
       </p>
     </aside>

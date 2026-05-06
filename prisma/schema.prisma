@@ -49,7 +49,7 @@ model Contribution {
   contributorName  String
   contributorEmail String
   contributorPhone String?
-  billCode        String
+  stripeSessionId  String?
   status          String    // pending | paid | failed
   paidAt          DateTime?
   createdAt       DateTime  @default(now())

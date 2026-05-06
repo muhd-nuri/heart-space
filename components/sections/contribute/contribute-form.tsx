@@ -449,7 +449,7 @@ function Summary({
 
       <div className="mt-5 flex items-center gap-2 text-[0.78rem] text-[var(--color-ink-muted)]">
         <ShieldCheck size={14} className="text-[var(--color-teal)]" />
-        <span>Secured by ToyyibPay · FPX, cards, e-wallets · MYR</span>
+        <span>Secured by Stripe · cards, FPX, e-wallets · MYR</span>
       </div>
     </motion.div>
   )

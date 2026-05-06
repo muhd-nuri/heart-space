@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { createBill } from "@/lib/toyyibpay"
+import { createCheckoutSession } from "@/lib/stripe"
 import { finalizeContribution } from "@/lib/contributions"
 
 const ContributionInput = z.object({
@@ -75,7 +75,8 @@ export async function submitContribution(
     campaignTitle = campaign.title
   }
 
-  // Create the pending row first; we need the id as ToyyibPay's external reference.
+  // Create the pending row first — its id is the metadata key Stripe sends
+  // back on the webhook, and the idempotency key for createCheckoutSession.
   const contribution = await prisma.contribution.create({
     data: {
       amount,
@@ -84,23 +85,22 @@ export async function submitContribution(
       contributorName: name,
       contributorEmail: email,
       contributorPhone: phone,
-      billCode: "pending", // overwritten below once createBill returns
+      stripeSessionId: null,
       status: "pending",
     },
   })
 
-  let bill
+  let session
   try {
-    bill = await createBill({
-      billName: `HeartSpace · ${campaignTitle.slice(0, 24)}`,
-      billDescription: `${type.toUpperCase()} contribution to HeartSpace`,
-      billAmountCents: Math.round(amount * 100),
-      billExternalReferenceNo: contribution.id,
-      payorName: name,
-      payorEmail: email,
-      payorPhone: phone,
-      returnUrl: `${siteUrl()}/contribute/success?ref=${contribution.id}`,
-      callbackUrl: `${siteUrl()}/api/toyyibpay/callback`,
+    session = await createCheckoutSession({
+      amount,
+      currency: "myr",
+      contributionId: contribution.id,
+      description: `${type.charAt(0).toUpperCase() + type.slice(1)} contribution · ${campaignTitle}`,
+      contributorName: name,
+      contributorEmail: email,
+      successUrl: `${siteUrl()}/contribute/success?ref=${contribution.id}`,
+      cancelUrl: `${siteUrl()}/contribute/failed?reason=cancelled`,
     })
   } catch (err) {
     await prisma.contribution.update({
@@ -109,20 +109,20 @@ export async function submitContribution(
     })
     redirect(
       `/contribute/failed?reason=${encodeURIComponent(
-        err instanceof Error ? err.message : "createBill failed"
+        err instanceof Error ? err.message : "Stripe session creation failed"
       )}`
     )
   }
 
   await prisma.contribution.update({
     where: { id: contribution.id },
-    data: { billCode: bill.billCode },
+    data: { stripeSessionId: session.sessionId },
   })
 
   // Stub mode: no real payment gateway, so finalize immediately.
-  if (bill.stubbed) {
+  if (session.stubbed) {
     await finalizeContribution(contribution.id)
   }
 
-  redirect(bill.paymentUrl)
+  redirect(session.paymentUrl)
 }

@@ -197,7 +197,7 @@ export default async function AdminContributionsPage({ searchParams }: Props) {
                   <Th>Type</Th>
                   <Th>Going to</Th>
                   <Th>Status</Th>
-                  <Th>Bill code</Th>
+                  <Th>Stripe session</Th>
                   <Th align="right">Amount</Th>
                 </tr>
               </thead>
@@ -252,9 +252,15 @@ export default async function AdminContributionsPage({ searchParams }: Props) {
                       <StatusPill status={c.status} />
                     </Td>
                     <Td>
-                      <code className="rounded bg-[var(--color-ash)] px-1.5 py-0.5 font-mono text-[0.74rem] text-[var(--color-ink-soft)]">
-                        {c.billCode}
-                      </code>
+                      {c.stripeSessionId ? (
+                        <code className="rounded bg-[var(--color-ash)] px-1.5 py-0.5 font-mono text-[0.74rem] text-[var(--color-ink-soft)]">
+                          {c.stripeSessionId.length > 18
+                            ? c.stripeSessionId.slice(0, 8) + "…" + c.stripeSessionId.slice(-6)
+                            : c.stripeSessionId}
+                        </code>
+                      ) : (
+                        <span className="text-[0.78rem] text-[var(--color-ink-muted)]">—</span>
+                      )}
                     </Td>
                     <Td align="right">
                       <span className="font-display font-bold tabular-nums text-[var(--color-teal-dark)]">

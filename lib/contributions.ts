@@ -7,12 +7,12 @@ import { contributionReceiptEmail } from "@/lib/email-templates"
  * Finalize a contribution: idempotent state-transition from `pending` →
  * `paid`, and atomic increment of `Campaign.raised`. Called from:
  *
- * - Stub mode of the contribute action (no real ToyyibPay account)
- * - The ToyyibPay webhook (Phase 2(3))
+ * - Stub mode of the contribute action (no Stripe account configured)
+ * - The Stripe webhook (`checkout.session.completed`)
  *
  * Idempotency: if the row is already `paid`, the function returns without
- * a second campaign increment. ToyyibPay sometimes retries callbacks and
- * we don't want raised totals to drift.
+ * a second campaign increment. Stripe retries webhooks on non-2xx responses
+ * and we don't want raised totals to drift.
  */
 export async function finalizeContribution(contributionId: string) {
   const result = await prisma.$transaction(async (tx) => {

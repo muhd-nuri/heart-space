@@ -6,7 +6,7 @@ import { getAllCampaigns } from "@/lib/data"
 export const metadata: Metadata = {
   title: "Contribute",
   description:
-    "Support HeartSpace via Sadaqah, Zakat, Waqf, or General. Choose a campaign or fund the general mission. Secure payment via ToyyibPay.",
+    "Support HeartSpace via Sadaqah, Zakat, Waqf, or General. Choose a campaign or fund the general mission. Secure payment via Stripe.",
 }
 
 type Props = { searchParams: Promise<{ campaign?: string; type?: string }> }
@@ -32,7 +32,7 @@ export default async function ContributePage({ searchParams }: Props) {
           </h1>
           <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-[var(--color-ink-muted)] md:text-[1.12rem]">
             Pick a type, choose a campaign — or fund our general mission —
-            then a secure payment via ToyyibPay. Receipt arrives by email.
+            then a secure payment via Stripe. Receipt arrives by email.
           </p>
         </div>
       </header>
