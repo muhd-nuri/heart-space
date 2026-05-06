@@ -172,6 +172,127 @@ export function contributionReceiptEmail(c: ContributionReceiptInput) {
   return { subject, html, text }
 }
 
+export type VolunteerConfirmationInput = {
+  name: string
+  email: string
+  program: string
+  city: string
+  siteUrl: string
+}
+
+const PROGRAM_DESCRIPTIONS: Record<string, string> = {
+  yert: "Youth Emergency Response Team — frontline mobilisation, training, and field deployment.",
+  fellowship: "Global Humanitarian Fellowship — a flagship year-long programme for committed humanitarians.",
+  general: "General volunteer — flexible support across our missions, events, and operations.",
+  event: "Event volunteer — Run for Humanity, Ride for Humanity, fundraisers, and community gatherings.",
+}
+
+export function volunteerConfirmationEmail(v: VolunteerConfirmationInput) {
+  const firstName = v.name.split(" ")[0]
+  const programLabel = capitalize(v.program === "yert" ? "YERT" : v.program)
+  const subject = `Welcome to the movement, ${firstName}`
+  const description = PROGRAM_DESCRIPTIONS[v.program] ?? "Thank you for stepping forward."
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${escapeHtml(subject)}</title>
+</head>
+<body style="margin:0;padding:0;background-color:${OFF_WHITE};font-family:${FONT};color:${INK_SOFT};">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${OFF_WHITE};">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:14px;overflow:hidden;border:1px solid ${HAIRLINE};">
+          <tr>
+            <td style="height:6px;background:linear-gradient(90deg,${TEAL} 0%,${CORAL} 50%,${TEAL} 100%);"></td>
+          </tr>
+          <tr>
+            <td style="padding:36px 36px 20px 36px;">
+              <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${CORAL};">
+                — You're in
+              </p>
+              <h1 style="margin:14px 0 0 0;font-size:30px;line-height:1.15;font-weight:800;color:${CHARCOAL};letter-spacing:-0.02em;">
+                Welcome, ${escapeHtml(firstName)}.
+              </h1>
+              <p style="margin:14px 0 0 0;font-size:16px;line-height:1.6;color:${INK_SOFT};">
+                Your application for the <strong style="color:${CHARCOAL};">${escapeHtml(programLabel)}</strong> programme is in. We read every one of these — a member of the team will reach out within 5 working days.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 36px 8px 36px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${ASH};border-radius:10px;">
+                <tr>
+                  <td style="padding:24px;">
+                    <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${INK_MUTED};">Programme</p>
+                    <p style="margin:8px 0 0 0;font-size:18px;font-weight:700;color:${CHARCOAL};letter-spacing:-0.01em;">${escapeHtml(programLabel)}</p>
+                    <p style="margin:8px 0 0 0;font-size:14px;line-height:1.6;color:${INK_SOFT};">${escapeHtml(description)}</p>
+                    <p style="margin:18px 0 0 0;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${INK_MUTED};">Based in</p>
+                    <p style="margin:6px 0 0 0;font-size:14px;color:${CHARCOAL};">${escapeHtml(v.city)}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 36px 8px 36px;">
+              <p style="margin:0;font-size:15px;line-height:1.7;color:${INK_SOFT};">
+                While you wait — follow us on Instagram and TikTok. The fastest way to get to know HeartSpace is to see what our youth and clinics are doing this week.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:24px 36px 36px 36px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="border-radius:9999px;background-color:${TEAL};">
+                    <a href="${v.siteUrl}/news" style="display:inline-block;padding:14px 28px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:9999px;letter-spacing:-0.005em;font-family:${FONT};">
+                      See latest from the field →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 36px 28px 36px;background-color:${ASH};border-top:1px solid ${HAIRLINE};">
+              <p style="margin:0;font-size:12px;line-height:1.6;color:${INK_MUTED};">
+                <strong style="color:${CHARCOAL};">HeartSpace · MyHeart</strong><br>
+                Lot 1A, Plaza Hamodal, Jalan Tun Razak, 50400 KL, Malaysia<br>
+                hello@heartspace.my
+              </p>
+            </td>
+          </tr>
+        </table>
+        <p style="margin:18px 0 0 0;font-size:11px;color:${INK_MUTED};font-family:${FONT};">
+          You applied to volunteer at HeartSpace using ${escapeHtml(v.email)}.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+
+  const text = [
+    `Welcome, ${firstName}.`,
+    ``,
+    `Your application for the ${programLabel} programme is in.`,
+    `A member of the team will reach out within 5 working days.`,
+    ``,
+    `Programme: ${programLabel}`,
+    `${description}`,
+    `Based in: ${v.city}`,
+    ``,
+    `See latest from the field: ${v.siteUrl}/news`,
+    ``,
+    `HeartSpace · MyHeart · Registered NGO Malaysia`,
+  ].join("\n")
+
+  return { subject, html, text }
+}
+
 function row(label: string, value: string, last = false) {
   return `<tr>
     <td style="padding:10px 24px ${last ? "24px" : "10px"} 24px;border-top:1px solid ${HAIRLINE};">
