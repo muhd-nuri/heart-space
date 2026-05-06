@@ -2,6 +2,13 @@ import { prisma } from "@/lib/prisma"
 import type { CampaignCardData } from "@/components/ui/campaign-card"
 import type { NewsCardData } from "@/components/ui/news-card"
 
+export type CampaignDetail = CampaignCardData & {
+  startDate: Date
+  endDate: Date | null
+  status: string
+  contributorCount: number
+}
+
 const FALLBACK_STATS = [
   { id: "stat-1", label: "People Served", value: "50,000+", icon: "Heart", order: 1 },
   { id: "stat-2", label: "Mobile Clinics", value: "8", icon: "Truck", order: 2 },
@@ -105,6 +112,79 @@ export async function getFeaturedCampaigns(limit = 3): Promise<CampaignCardData[
     }))
   } catch {
     return FALLBACK_CAMPAIGNS
+  }
+}
+
+export async function getAllCampaigns(opts?: {
+  category?: string
+}): Promise<CampaignCardData[]> {
+  try {
+    const campaigns = await prisma.campaign.findMany({
+      where: {
+        status: "active",
+        ...(opts?.category ? { category: opts.category } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+    })
+    if (!campaigns.length && !opts?.category) return FALLBACK_CAMPAIGNS
+    return campaigns.map((c) => ({
+      title: c.title,
+      slug: c.slug,
+      description: c.description,
+      image: c.image,
+      category: c.category,
+      raised: c.raised,
+      target: c.target,
+    }))
+  } catch {
+    if (opts?.category) {
+      return FALLBACK_CAMPAIGNS.filter((c) => c.category === opts.category)
+    }
+    return FALLBACK_CAMPAIGNS
+  }
+}
+
+export async function getCampaign(slug: string): Promise<CampaignDetail | null> {
+  try {
+    const c = await prisma.campaign.findUnique({
+      where: { slug },
+      include: {
+        _count: {
+          select: { contributions: { where: { status: "paid" } } },
+        },
+      },
+    })
+    if (!c) {
+      // dev fallback so the page still works without a DB
+      return makeFallbackDetail(slug)
+    }
+    return {
+      title: c.title,
+      slug: c.slug,
+      description: c.description,
+      image: c.image,
+      category: c.category,
+      raised: c.raised,
+      target: c.target,
+      startDate: c.startDate,
+      endDate: c.endDate,
+      status: c.status,
+      contributorCount: c._count.contributions,
+    }
+  } catch {
+    return makeFallbackDetail(slug)
+  }
+}
+
+function makeFallbackDetail(slug: string): CampaignDetail | null {
+  const fb = FALLBACK_CAMPAIGNS.find((c) => c.slug === slug)
+  if (!fb) return null
+  return {
+    ...fb,
+    startDate: new Date("2026-01-01"),
+    endDate: null,
+    status: "active",
+    contributorCount: 0,
   }
 }
 
