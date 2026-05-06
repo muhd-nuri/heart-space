@@ -61,11 +61,7 @@ export function CampaignForm({
   const [slug, setSlug] = useState(initial.slug)
   const [slugTouched, setSlugTouched] = useState(mode.kind === "edit" || !!initial.slug)
   const [description, setDescription] = useState(initial.description)
-  const [image, setImage] = useState(
-    // Legacy seed paths like "/images/campaigns/gaza.jpg" don't render under
-    // next/image without an allowlist; show as empty so the admin uploads a real cover.
-    initial.image && !initial.image.startsWith("/images/") ? initial.image : ""
-  )
+  const [image, setImage] = useState(initial.image)
   const [target, setTarget] = useState<string>(String(initial.target))
   const [status, setStatus] = useState(initial.status)
   const [category, setCategory] = useState(initial.category)

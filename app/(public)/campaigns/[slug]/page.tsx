@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
@@ -123,11 +124,75 @@ export default async function CampaignDetailPage({ params }: Props) {
             <h3 className="mt-12 font-display text-[1.4rem] font-bold text-[var(--color-ink)]">
               Field updates
             </h3>
-            <p className="mt-4 text-[0.95rem] leading-relaxed text-[var(--color-ink-muted)]">
-              Updates from the ground will appear here as the campaign
-              progresses. Subscribe to our newsletter to get them delivered
-              monthly.
-            </p>
+            {campaign.updates.length === 0 ? (
+              <p className="mt-4 text-[0.95rem] leading-relaxed text-[var(--color-ink-muted)]">
+                Updates from the ground will appear here as the campaign
+                progresses. Subscribe to our newsletter to get them delivered
+                monthly.
+              </p>
+            ) : (
+              <ol className="mt-6 space-y-8">
+                {campaign.updates.map((u) => (
+                  <li
+                    key={u.id}
+                    className="relative border-l-2 border-[var(--color-coral)]/40 pl-6"
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute -left-[7px] top-1 inline-block h-3 w-3 rounded-full bg-[var(--color-coral)]"
+                    />
+                    <p className="text-[0.74rem] font-semibold uppercase tracking-[0.14em] text-[var(--color-coral)]">
+                      {u.postedAt.toLocaleDateString("en-MY", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                    <h4 className="mt-2 font-display text-[1.18rem] font-bold leading-tight text-[var(--color-ink)]">
+                      {u.title}
+                    </h4>
+                    <p className="mt-3 whitespace-pre-line text-[0.95rem] leading-[1.7] text-[var(--color-ink-soft)]">
+                      {u.body}
+                    </p>
+                    {u.images.length > 0 && (
+                      <div
+                        className={`mt-5 grid gap-2 ${
+                          u.images.length === 1
+                            ? "grid-cols-1"
+                            : u.images.length === 2
+                              ? "grid-cols-2"
+                              : "grid-cols-2 sm:grid-cols-3"
+                        }`}
+                      >
+                        {u.images.map((img, i) => (
+                          <figure
+                            key={`${img.url}-${i}`}
+                            className={`relative overflow-hidden rounded-md border border-[var(--color-hairline)] bg-[var(--color-ash)] ${
+                              u.images.length === 1
+                                ? "aspect-[16/10]"
+                                : "aspect-square"
+                            }`}
+                          >
+                            <Image
+                              src={img.url}
+                              alt={img.alt ?? ""}
+                              fill
+                              sizes="(min-width: 640px) 200px, 50vw"
+                              className="object-cover"
+                            />
+                            {img.alt && (
+                              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 text-[0.72rem] leading-snug text-white">
+                                {img.alt}
+                              </figcaption>
+                            )}
+                          </figure>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            )}
           </article>
 
           <div className="md:col-span-5">

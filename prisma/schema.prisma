@@ -10,19 +10,33 @@ datasource db {
 // ─── HeartSpace domain models ──────────────────────────────────────────
 
 model Campaign {
-  id          String     @id @default(cuid())
-  title       String
-  slug        String     @unique
-  description String
-  target      Float
-  raised      Float      @default(0)
-  image       String
-  status      String     // active | completed | draft
-  category    String     // healthcare | disaster | waqf | zakat
-  startDate   DateTime
-  endDate     DateTime?
+  id            String           @id @default(cuid())
+  title         String
+  slug          String           @unique
+  description   String
+  target        Float
+  raised        Float            @default(0)
+  image         String
+  status        String           // active | completed | draft
+  category      String           // healthcare | disaster | waqf | zakat
+  startDate     DateTime
+  endDate       DateTime?
   contributions Contribution[]
-  createdAt   DateTime   @default(now())
+  updates       CampaignUpdate[]
+  createdAt     DateTime         @default(now())
+}
+
+model CampaignUpdate {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  title      String
+  body       String   // plain text, line breaks preserved when rendered
+  images     Json     @default("[]") // array of { url: string, alt?: string }
+  postedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([campaignId, postedAt(sort: Desc)])
 }
 
 model Contribution {

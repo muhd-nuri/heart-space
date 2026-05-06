@@ -33,6 +33,15 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       return { url: file.ufsUrl }
     }),
+
+  // Campaign-update gallery — multi-file upload (up to 10 per shot).
+  updateImage: f({
+    image: { maxFileSize: "4MB", maxFileCount: 10 },
+  })
+    .middleware(authMiddleware)
+    .onUploadComplete(async ({ file }) => {
+      return { url: file.ufsUrl }
+    }),
 } satisfies FileRouter
 
 export type OurFileRouter = typeof ourFileRouter

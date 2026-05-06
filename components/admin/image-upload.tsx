@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react"
 import Image from "next/image"
-import { Loader2, Trash2, Upload, AlertTriangle } from "lucide-react"
+import { Loader2, Trash2, Upload, AlertTriangle, ImageOff } from "lucide-react"
 import { useUploadThing } from "@/lib/uploadthing"
 import type { OurFileRouter } from "@/app/api/uploadthing/core"
 import { cn } from "@/lib/utils"
@@ -75,17 +75,19 @@ export function ImageUpload({
     pickFiles(e.dataTransfer.files)
   }
 
+  // Three states: empty → dropzone, legacy local path → placeholder, https URL → live preview.
+  const isLegacyLocal = !!value && !/^https?:\/\//.test(value)
+
   return (
     <div className="space-y-2">
       <input type="hidden" name={name} value={value} />
 
-      {value ? (
+      {value && !isLegacyLocal ? (
         <div className="space-y-2">
           <div
             className="relative w-full overflow-hidden rounded-md border border-[var(--color-hairline)] bg-[var(--color-ash)]"
             style={{ aspectRatio: aspect }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <Image
               src={value}
               alt="Cover preview"
@@ -127,6 +129,53 @@ export function ImageUpload({
             <code className="ml-1 truncate rounded bg-[var(--color-ash)] px-1.5 py-0.5 font-mono text-[0.72rem] text-[var(--color-ink-muted)]">
               {prettyUrl(value)}
             </code>
+          </div>
+        </div>
+      ) : isLegacyLocal ? (
+        <div className="space-y-2">
+          <div
+            className="relative flex w-full flex-col items-center justify-center gap-2 overflow-hidden rounded-md border border-[var(--color-hairline)] bg-[var(--color-ash)] p-6 text-center"
+            style={{ aspectRatio: aspect }}
+          >
+            <ImageOff size={20} strokeWidth={1.6} className="text-[var(--color-ink-muted)]" />
+            <p className="font-display text-[0.92rem] font-bold text-[var(--color-ink)]">
+              Local placeholder
+            </p>
+            <code className="rounded bg-white px-2 py-0.5 font-mono text-[0.72rem] text-[var(--color-ink-muted)]">
+              {value}
+            </code>
+            <p className="max-w-xs text-[0.78rem] text-[var(--color-ink-muted)]">
+              The site renders a gradient fallback for this. Upload a real
+              image to replace — or leave as is.
+            </p>
+            {isUploading && (
+              <div className="absolute inset-0 grid place-items-center bg-black/40 text-white">
+                <div className="flex items-center gap-2 text-[0.86rem]">
+                  <Loader2 size={14} className="animate-spin" />
+                  Uploading {progress}%
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={isUploading}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-hairline)] bg-white px-3 py-1.5 text-[0.82rem] font-medium text-[var(--color-ink)] transition-colors hover:border-[var(--color-teal)] hover:text-[var(--color-teal-dark)] disabled:opacity-60"
+            >
+              <Upload size={12} />
+              Upload to replace
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              disabled={isUploading}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-hairline)] bg-white px-3 py-1.5 text-[0.82rem] font-medium text-[var(--color-ink-muted)] transition-colors hover:border-[var(--color-coral)]/60 hover:text-[var(--color-coral-dark)] disabled:opacity-60"
+            >
+              <Trash2 size={12} />
+              Clear
+            </button>
           </div>
         </div>
       ) : (

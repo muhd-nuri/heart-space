@@ -60,10 +60,7 @@ export function NewsForm({
   const [slug, setSlug] = useState(initial.slug)
   const [slugTouched, setSlugTouched] = useState(mode.kind === "edit" || !!initial.slug)
   const [excerpt, setExcerpt] = useState(initial.excerpt)
-  const [coverImage, setCoverImage] = useState(
-    // Same legacy-path handling as the campaign form.
-    initial.coverImage && !initial.coverImage.startsWith("/images/") ? initial.coverImage : ""
-  )
+  const [coverImage, setCoverImage] = useState(initial.coverImage)
   const [category, setCategory] = useState(initial.category)
   const [author, setAuthor] = useState(initial.author)
   const [published, setPublished] = useState(initial.published)

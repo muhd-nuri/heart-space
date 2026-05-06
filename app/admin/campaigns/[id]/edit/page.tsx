@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { ChevronLeft, ExternalLink } from "lucide-react"
 import { AdminPageHeader } from "@/components/admin/page-header"
 import { CampaignForm } from "@/components/admin/campaign-form"
+import { CampaignUpdates } from "@/components/admin/campaign-updates"
 import { DeleteButton } from "@/components/admin/delete-button"
 import { prisma } from "@/lib/prisma"
 import { deleteCampaign } from "../../actions"
@@ -11,7 +12,12 @@ type Props = { params: Promise<{ id: string }> }
 
 export default async function EditCampaignPage({ params }: Props) {
   const { id } = await params
-  const campaign = await prisma.campaign.findUnique({ where: { id } })
+  const campaign = await prisma.campaign.findUnique({
+    where: { id },
+    include: {
+      updates: { orderBy: { postedAt: "desc" } },
+    },
+  })
   if (!campaign) notFound()
 
   return (
@@ -54,6 +60,23 @@ export default async function EditCampaignPage({ params }: Props) {
               startDate: campaign.startDate.toISOString().slice(0, 10),
               endDate: campaign.endDate ? campaign.endDate.toISOString().slice(0, 10) : "",
             }}
+          />
+        </div>
+
+        <div className="mt-8">
+          <CampaignUpdates
+            campaignId={campaign.id}
+            updates={campaign.updates.map((u) => ({
+              id: u.id,
+              title: u.title,
+              body: u.body,
+              postedAt: u.postedAt.toISOString(),
+              images: Array.isArray(u.images)
+                ? (u.images as Array<{ url: string; alt?: string }>).filter(
+                    (x) => typeof x?.url === "string"
+                  )
+                : [],
+            }))}
           />
         </div>
 

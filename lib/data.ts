@@ -2,11 +2,20 @@ import { prisma } from "@/lib/prisma"
 import type { CampaignCardData } from "@/components/ui/campaign-card"
 import type { NewsCardData } from "@/components/ui/news-card"
 
+export type CampaignUpdateLite = {
+  id: string
+  title: string
+  body: string
+  postedAt: Date
+  images: Array<{ url: string; alt?: string | null }>
+}
+
 export type CampaignDetail = CampaignCardData & {
   startDate: Date
   endDate: Date | null
   status: string
   contributorCount: number
+  updates: CampaignUpdateLite[]
 }
 
 const FALLBACK_STATS = [
@@ -149,6 +158,7 @@ export async function getCampaign(slug: string): Promise<CampaignDetail | null> 
     const c = await prisma.campaign.findUnique({
       where: { slug },
       include: {
+        updates: { orderBy: { postedAt: "desc" } },
         _count: {
           select: { contributions: { where: { status: "paid" } } },
         },
@@ -170,10 +180,30 @@ export async function getCampaign(slug: string): Promise<CampaignDetail | null> 
       endDate: c.endDate,
       status: c.status,
       contributorCount: c._count.contributions,
+      updates: c.updates.map((u) => ({
+        id: u.id,
+        title: u.title,
+        body: u.body,
+        postedAt: u.postedAt,
+        images: parseUpdateImages(u.images),
+      })),
     }
   } catch {
     return makeFallbackDetail(slug)
   }
+}
+
+/**
+ * Defensively parse the `images` JSON column. Bad data shouldn't take the
+ * page down — anything that doesn't shape-match falls back to an empty array.
+ */
+function parseUpdateImages(raw: unknown): CampaignUpdateLite["images"] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .filter((x): x is { url: string; alt?: string } =>
+      typeof x === "object" && x !== null && typeof (x as { url?: unknown }).url === "string"
+    )
+    .map((x) => ({ url: x.url, alt: typeof x.alt === "string" ? x.alt : null }))
 }
 
 function makeFallbackDetail(slug: string): CampaignDetail | null {
@@ -185,6 +215,7 @@ function makeFallbackDetail(slug: string): CampaignDetail | null {
     endDate: null,
     status: "active",
     contributorCount: 0,
+    updates: [],
   }
 }
 
