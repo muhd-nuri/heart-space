@@ -89,3 +89,30 @@ export async function createBill(input: CreateBillInput): Promise<CreateBillResu
     stubbed: false,
   }
 }
+
+/**
+ * ToyyibPay's webhook is an unsigned POST — anyone with our callback URL
+ * could spoof it. Use this to verify by re-querying ToyyibPay with the
+ * billCode and confirming the transaction's status independently.
+ *
+ * Returns the most recent successful transaction's status string from
+ * ToyyibPay, or `null` if not found / stubbed.
+ *
+ * Status codes: "1" = success, "2" = pending, "3" = failed.
+ */
+export async function getBillTransactionStatus(billCode: string): Promise<string | null> {
+  const userSecretKey = process.env.TOYYIBPAY_USER_SECRET_KEY
+  if (!userSecretKey) return null // stub mode — caller must trust webhook payload
+
+  const res = await fetch(`${TOYYIBPAY_BASE}/index.php/api/getBillTransactions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ userSecretKey, billCode }),
+    cache: "no-store",
+  })
+  if (!res.ok) return null
+
+  const data = (await res.json()) as Array<{ billpaymentStatus?: string; billStatus?: string }>
+  const tx = Array.isArray(data) ? data[0] : null
+  return tx?.billpaymentStatus ?? tx?.billStatus ?? null
+}
