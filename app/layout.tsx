@@ -3,9 +3,6 @@ import { Plus_Jakarta_Sans } from "next/font/google"
 import localFont from "next/font/local"
 
 import "./globals.css"
-import { Navbar } from "@/components/layout/navbar"
-import { Footer } from "@/components/layout/footer"
-import { WhatsAppFloat } from "@/components/layout/whatsapp-float"
 
 const display = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -47,10 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className={`${body.className} bg-[var(--color-off-white)] text-[var(--color-ink-soft)] antialiased`}>
-        <Navbar />
-        <main className="min-h-[calc(100svh-68px)]">{children}</main>
-        <Footer />
-        <WhatsAppFloat />
+        {children}
       </body>
     </html>
   )

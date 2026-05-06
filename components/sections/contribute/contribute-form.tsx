@@ -8,7 +8,7 @@ import type { CampaignCardData } from "@/components/ui/campaign-card"
 import { CategoryBadge } from "@/components/ui/category-badge"
 import { CampaignImage } from "@/components/ui/campaign-image"
 import { CTAButton } from "@/components/ui/cta-button"
-import { submitContribution, type ContributionFormState } from "@/app/contribute/actions"
+import { submitContribution, type ContributionFormState } from "@/app/(public)/contribute/actions"
 import { cn, formatRM, progressPct } from "@/lib/utils"
 
 type Type = "sadaqah" | "zakat" | "waqf" | "general"
